@@ -1,6 +1,6 @@
 ### OSXCross Extras
 
-Extra stuff for `osxcross` toolchain.
+Extra stuff for `osxcross` toolchain. Provide cmake default gcc cross-compiler Dockerfile.
 
 #### Contents:
 

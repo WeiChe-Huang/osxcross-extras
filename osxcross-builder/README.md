@@ -5,16 +5,48 @@
 2. Decent network connection
 3. Decent powerful computer with recent Linux distribution installed
 4. Install `sed wget git cmake llvm clang clang++ bsdtar xz python2 python3 bash cmake`
-5. A valid Apple ID (for download macOS SDK)
+5. A Command_Line_Tools_for_Xcode_XX.X.dmg downdload from Apple developer page
 
 #### Instructions / Usage
-1. Make sure your Apple ID has enrolled in Apple Developer program. If not, go to https://developer.apple.com/download/ to apply for the program.
-2. [Recommended] Create a new directory and put all the files under this folder into that directory
-3. Run `pip3 install -r requirements.txt`, if your Linux distribution uses Python 3 as default Python interpreter, run `pip install -r requirements.txt`
-4. Run `XCODE_USERNAME=<your Apple ID> XCODE_PASSWORD=<your password> ./create_osxcross_toolchain.sh`
-5. [Optional] If you want to install toolchain to somewhere else, set `OC_SYSROOT` environment variable to your desired location
-6. Wait for ~1 hour and your tool chain will be built.
-7. Run the commands that you are told to run to install runtime libraries.
+1. Please make sure the `Command_Line_Tools_for_Xcode_XX.X.dmg` is place under osxcross-builder folder
+2. [Optional] If you want to install toolchain to somewhere else, set `OC_SYSROOT` environment variable to your desired location
+3. Wait for ~1 hour and your tool chain will be built.
+4. Run the commands that you are told to run to install runtime libraries.
+    * Build osxcross-extra docker image
+        ```bash
+        $ docker build .
+        ```
+    * Manual steps
+        * please install libusb and change camke default compiler by following steps:
+            1. create container from second stage docker image
+                ```bash 
+                # host terminal - 1:
+                $ docker run -it --name {container_name} {builded_second_stage_image_id} /bin/bash
+                ```
+            2. manually initial macports repo by run osxcross-macports upgrade with interactive command
+                ```bash 
+                # docker container bash:
+                $ osxcross-macports upgrade
+                $ osxcross-macports install libusb
+                ```
+            3. manually change cmake default compiler
+                ```bash 
+                # docker container bash:
+                $ apt install vim
+                $ vim /opt/osxcross/toolchain.cmake
+                ```
+            4. specify your gcc cross compiler at line 23, 24 of /opt/osxcross/toolchain.cmake by
+                ```vim 
+                # vim /opt/osxcross/toolchain.cmake
+                [line 23] # specify the cross compiler
+                [line 24] set(CMAKE_C_COMPILER "${OSXCROSS_TARGET_DIR}/bin/${OSXCROSS_HOST}-gcc")
+                [line 25] set(CMAKE_CXX_COMPILER "${OSXCROSS_TARGET_DIR}/bin/${OSXCROSS_HOST}-g++")
+                ```
+            4. commit docker image by second host terminal
+                ```bash 
+                # host terminal - 2:
+                $ docker commit {container_name} {new_image_name}
+                ```
 
 #### Influencial Environment Variables
 

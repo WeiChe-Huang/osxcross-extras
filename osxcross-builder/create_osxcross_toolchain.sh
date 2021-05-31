@@ -31,12 +31,6 @@ fi
 
 guess_targets "${XCODE_VER}"
 
-echo 'Locating Xcode package...'
-python3 fetch-xcode.py
-
-echo "Downloading Xcode image file..."
-bash download_xcode$XCODE_VER.sh >> "${STDOUT}" 2>&1
-
 echo 'Making SDK tarball...'
 reconstruct_xcode_img "$(readlink -f Command_Line_Tools*for_Xcode_${XCODE_VER}.dmg)"
 
@@ -48,12 +42,10 @@ fi
 git clone --depth=50 https://github.com/tpoechtrager/osxcross/
 cd osxcross
 
-for i in ../*.patch; do
-    echo "Applying $(basename "${i}")..."
-    patch -Np1 -i "${i}"
-done
 
+mv -f ../osxcross_conf.sh ./tools/osxcross_conf.sh
 mv ../MacOSX10.*.sdk.tar.* ./tarballs/
+chmod a+x ./tools/osxcross_conf.sh
 
 if [[ "x${OC_SYSROOT}" == 'x' ]]; then
   OC_SYSROOT="$(readlink -f ./target)"
@@ -63,20 +55,28 @@ echo "Toolchain will be installed to ${OC_SYSROOT}"
 
 export TARGET_DIR="${OC_SYSROOT}"
 export OSXCROSS_OSX_VERSION_MIN="${OSX_VERSION_MIN}"
+echo 'Get dependencies...'
+./tools/get_dependencies.sh
+
 echo 'Building base toolchain...'
-if ! UNATTENDED=1 ./build.sh >> "${STDOUT}"; then
+if ! UNATTENDED=1 ./build.sh; then
   echo "Build failed."
   exit 1
 fi
 
+export PATH=${PATH}:/opt/osxcross/bin/
+
 echo "Building extra tools..."
 
+echo 'Building gcc...'
+./build_gcc.sh
+
 echo 'Building LLVM dsymutil...'
-./build_llvm_dsymutil.sh >> "${STDOUT}"
+./build_llvm_dsymutil.sh
 
 if [[ "x${XCODE_NORT}" != 'x' ]]; then
   echo "Skipped building compiler runtime."
-  exit
+  exit 0
 fi
 
 RT_BUILD_LOG="$(mktemp --suffix='.log' -p .)"
