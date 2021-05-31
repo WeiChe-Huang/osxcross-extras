@@ -9,9 +9,14 @@
 
 #### Instructions / Usage
 1. Please make sure the `Command_Line_Tools_for_Xcode_XX.X.dmg` is place under osxcross-builder folder
-2. [Optional] If you want to install toolchain to somewhere else, set `OC_SYSROOT` environment variable to your desired location
-3. Wait for ~1 hour and your tool chain will be built.
-4. Run the commands that you are told to run to install runtime libraries.
+2. Replace your `Command_Line_Tools_for_Xcode_XX.X.dmg` version in osxcross-builder/ci.sh
+    * replace TARGET_MAC_VER as your SDK version XX.X
+        ```bash
+        export TARGET_MAC_VER='10.14' -> 'your_sdk_version'
+        ```
+3. [Optional] If you want to install toolchain to somewhere else, set `OC_SYSROOT` environment variable to your desired location
+4. Wait for ~1 hour and your tool chain will be built.
+5. Run the commands that you are told to run to install runtime libraries.
     * Build osxcross-extra docker image
         ```bash
         $ docker build .
@@ -42,7 +47,7 @@
                 [line 24] set(CMAKE_C_COMPILER "${OSXCROSS_TARGET_DIR}/bin/${OSXCROSS_HOST}-gcc")
                 [line 25] set(CMAKE_CXX_COMPILER "${OSXCROSS_TARGET_DIR}/bin/${OSXCROSS_HOST}-g++")
                 ```
-            4. commit docker image by second host terminal
+            5. commit docker image by second host terminal
                 ```bash 
                 # host terminal - 2:
                 $ docker commit {container_name} {new_image_name}
